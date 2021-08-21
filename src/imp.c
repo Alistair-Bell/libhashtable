@@ -21,6 +21,7 @@
 static void
 bucket_realloc(struct bucket *bucket)
 {
+	fprintf(stderr, "here!\n");
 	/* Increase the bucket allocation count. */
 	bucket->alloc_count += 15;
 	register size_t size = sizeof(*bucket->residents) * bucket->alloc_count;
@@ -32,7 +33,7 @@ hash_table_create(struct hash_table *table)
 {
 	register size_t alloc = sizeof(*table->buckets) * HASH_TABLE_START_SIZE;
 	*table = (struct hash_table) {
-		.buckets = (struct bucket *)malloc(alloc),
+		.buckets = (struct bucket *)calloc(HASH_TABLE_START_SIZE, sizeof(*table->buckets)),
 		.bucket_count = HASH_TABLE_START_SIZE,
 	};
 	memset(table->buckets, 0, alloc);
@@ -44,25 +45,21 @@ hash_table_insert(struct hash_table *table, hash_t *hash)
 	/* Find the index of the bucket it is going within. */
 	uint32_t bucket = *hash % table->bucket_count;
 
-	/* Check for bucket members. */
-	struct bucket *bptr = (struct bucket *)&table->buckets[bucket];
-	if (bptr->resident_count == 0) {
-		/* If the bucket has no members then allocate the starting count. */
-		bptr->residents = calloc(HASH_TABLE_START_SIZE, sizeof(*bptr->residents));
+	/* Pointer the target bucket. */
+	struct bucket *b = &table->buckets[bucket];
 
-		/* Resident the hash at index 0 then return. */
-		*bptr->residents = *hash;
-		bptr->alloc_count = HASH_TABLE_START_SIZE;
-		return;
-	}
-	/* Check that the bucket does not require more residents. This will never fire if the previous if clause was passed. */
-	if (bptr->resident_count == (bptr->alloc_count - 1)) {
-		bucket_realloc(bptr);
-	}
+	/* Check if it has been allocated. */
+	if (b->residents == NULL) {
+		b->residents = (hash_t *)calloc(HASH_TABLE_START_SIZE, sizeof(*b->residents));
 
-	/* Insert the new member then sort the list. */
-	bptr->residents[bptr->resident_count] = *hash;
-	bucket_sort(bptr);
+		/* Set the alloc count. */
+		b->alloc_count = HASH_TABLE_START_SIZE;
+	}
+	
+	b->residents[b->resident_count] = *hash;
+	/* Incriment the resident count. */
+	++b->resident_count;
+	bucket_sort(b);
 }
 void
 hash_table_insert_batch(struct hash_table *table, hash_t *hashes, uint32_t hash_count)
@@ -70,7 +67,7 @@ hash_table_insert_batch(struct hash_table *table, hash_t *hashes, uint32_t hash_
 	/* Pretty much the lazy implimentation. */
 	uint32_t i = 0;
 	for (; i < hash_count; ++i) {
-		hash_table_insert(table, &(*(hashes + i)));
+		hash_table_insert(table, &hashes[i]);
 	}
 }
 
@@ -102,10 +99,10 @@ void
 hash_table_destroy(struct hash_table *table)
 {
 	/* Firstly free all the bucket residents. */
-	struct bucket *bptr = &(*table->buckets);
-	for (; bptr <= &table->buckets[table->bucket_count - 1]; ++bptr) {
-		if (bptr->residents != NULL) {
-			free(bptr->residents);
+	struct bucket *b = &(*table->buckets);
+	for (; b < &table->buckets[table->bucket_count]; ++b) {
+		if (b->residents != NULL) {
+			free(b->residents);
 		}
 	}
 	free(table->buckets);
