@@ -1,5 +1,6 @@
-
-include           config.mk
+ifneq (,$(wildcard config.mk))
+	include config.mk
+endif
 
 SOURCES			= src/algor.c src/imp.c
 OBJECTS			= ${SOURCES:.c=.o}
@@ -11,10 +12,11 @@ OUT_LIB         = libhashtable.a
 
 all: ${OUT}
 
-
 ${OUT}: ${OBJECTS}
 	$(AR) rcs ${OUT_LIB} ${OBJECTS}
-	
+
+target_lib:
+	@echo ${OUT_LIB}
 
 clean:
 	rm ${OUT_LIB}
