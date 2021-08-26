@@ -14,7 +14,7 @@ S_LINK_FLAGS    = -L .
 .c.o:
 	$(CC) -c ${CONFIG_CC_FLAGS} $< -o $@
 
-all: ${OUT} ${S_OUT}
+all: ${OUT}
 
 ${OUT}: ${OBJECTS}
 	$(AR) rcs ${OUT_LIB} ${OBJECTS}
@@ -23,7 +23,6 @@ ${S_OUT}: ${S_OBJECTS}
 	$(CC) ${S_LINK_FLAGS} -o $@ ${S_OBJECTS} ${S_LINKS}
 
 clean:
-	rm ${OUT_LIB} ${S_OUT}
+	rm ${OUT_LIB}
 	rm src/*.o
-	rm *.o
 	
