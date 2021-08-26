@@ -18,14 +18,10 @@
 
 #include "extern.h"
 
-static void
+void
 bucket_realloc(struct bucket *bucket)
 {
-	fprintf(stderr, "here!\n");
-	/* Increase the bucket allocation count. */
-	bucket->alloc_count += 15;
-	register size_t size = sizeof(*bucket->residents) * bucket->alloc_count;
-	bucket->residents = realloc(bucket->residents, size);
+	
 }
 
 void
@@ -74,7 +70,7 @@ hash_table_insert_batch(struct hash_table *table, hash_t *hashes, uint32_t hash_
 struct hash_table_home
 hash_table_find(struct hash_table *table, hash_t *hash)
 {
-	struct hash_table_home home = { 0 };
+	struct hash_table_home home = { .bucket = UINT32_MAX, .index = UINT32_MAX };
 	/* Firstly find the bucket where is resides. */
 	struct bucket *bptr = &table->buckets[*hash % table->bucket_count];
 	
@@ -88,8 +84,8 @@ hash_table_find(struct hash_table *table, hash_t *hash)
 	
 	if (index != -1) {
 		home = (struct hash_table_home) {
-			.root_index = b_index,
-			.bucket_index = (uint32_t) index,
+			.bucket = b_index,
+			.index = (uint32_t)index,
 		};
 	}
 	return home;

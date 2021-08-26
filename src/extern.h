@@ -28,7 +28,7 @@
  * Each element within the root table stores a bucket, this helps deal with conflicts caused by likewise elements.
  * Until a conflict has occurred the bucket is void and instead the hash resides.
  * Searches consist of a single 64 bit unsigned integer. The lower 32 represent the root table index, upper the bucket index.
- *     If the root index does not contain an bucket then the hash_table_home->bucket_index will be 0,
+ *     If the root index does not contain an bucket then the hash_table_home->bucket will be UINT32_MAX,
  * Hash table buckets use sorted array of hashes, binary search is used to find the resident.
  */
 
@@ -48,22 +48,32 @@ struct hash_table_home {
 	uint64_t combined;
 	union {
 		struct {
-			uint32_t root_index;
-			uint32_t bucket_index;
+			uint32_t bucket;
+			uint32_t index;
 		};
 	};
 };
 
-/* Sorts the hashes using an apropriate algorithm. */
+/* Sorts a single bucket. */
 void bucket_sort(struct bucket *);
-/* A simple binary search algorithm, returns -1 on failure. */
+/* Searches a target bucket for an element, returning -1 on failure. */
 int64_t binary_search(hash_t *, hash_t, uint32_t, uint32_t);
 
+/* Creates and allocates buckets for the hashtable, should be destroyed with hash_table_destroy to avoid leaks. */
 void hash_table_create(struct hash_table *);
+/* Resizes the hashtable bucket count rehoming all members, never automatically called. */
+void hash_table_realloc(struct hash_table *, uint32_t);
+/* Inserts a member into a bucket. */
 void hash_table_insert(struct hash_table *, hash_t *);
+/* Will batch insert elements all at once. */
 void hash_table_insert_batch(struct hash_table *, hash_t *, uint32_t);
-/* Will return the home as UINT32_MAX on both of the members if it has not been found. */
+/* Returns the bucket and index into the bucket an member lives, UINT32_MAX will be returned if searches fail. */
 struct hash_table_home hash_table_find(struct hash_table *, hash_t *);
+/* Frees all the allocated memory within a hashtable, will segfault if create was not called. */
 void hash_table_destroy(struct hash_table *);
+
+/* Misc algorithms, pretty self explanatory. */
+void bucket_sort(struct bucket *);
+int64_t binary_search(hash_t *, hash_t, uint32_t, uint32_t);
 
 #endif
