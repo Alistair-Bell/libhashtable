@@ -36,7 +36,8 @@
 
 struct hash_table {
 	struct bucket *buckets;
-	uint32_t bucket_count;
+	uint32_t count;
+	uint32_t homed;
 };
 struct bucket {
 	hash_t *residents;
@@ -64,11 +65,15 @@ void hash_table_create(struct hash_table *);
 /* Resizes the hashtable bucket count rehoming all members, never automatically called. */
 void hash_table_realloc(struct hash_table *, uint32_t);
 /* Inserts a member into a bucket. */
-void hash_table_insert(struct hash_table *, hash_t *);
+void hash_table_insert(struct hash_table *, hash_t);
 /* Will batch insert elements all at once. */
 void hash_table_insert_batch(struct hash_table *, hash_t *, uint32_t);
+/* Removes an hash table element based on a hash value. */
+int8_t hash_table_remove(struct hash_table *, hash_t);
+/* Removes a hash table element based on reference indexing, an optional cert hash can be used to authenticated before removing. */
+int8_t hash_table_remove_reference(struct hash_table *, struct hash_table_home *, hash_t *);
 /* Returns the bucket and index into the bucket an member lives, UINT32_MAX will be returned if searches fail. */
-struct hash_table_home hash_table_find(struct hash_table *, hash_t *);
+struct hash_table_home hash_table_find(struct hash_table *, hash_t);
 /* Frees all the allocated memory within a hashtable, will segfault if create was not called. */
 void hash_table_destroy(struct hash_table *);
 
