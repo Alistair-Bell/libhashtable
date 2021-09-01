@@ -100,13 +100,13 @@ hash_table_remove(struct hash_table *table, hash_t hash)
 		return -1;
 	}
 	/* Lookup whether it exists. */
-	uint64_t index;
+	int64_t index;
 	if ((index = binary_search(bptr->residents, hash, 0, bptr->resident_count)) != -1) {
 		/* Remove it based on the index, this is done by left shifting the elements and overriding the values. */
 		bucket_residents_shift_left(bptr, (uint32_t)index);
 		return 0;
 	}
-	return index;
+	return -1;
 }
 int8_t
 hash_table_remove_reference(struct hash_table *table, struct hash_table_home *ref, hash_t *cert)
