@@ -12,15 +12,18 @@ E_LINKS         = -lhashtable
 E_LINK_FLAGS    = -L .
 
 .c.o:
-	$(CC) -c ${CONFIG_CC_FLAGS} $< -o $@
+	@echo "cc $@"
+	@$(CC) -c ${CONFIG_CC_FLAGS} $< -o $@
 
 all: ${OUT}
 
 ${OUT}: ${OBJECTS}
-	$(AR) rcs ${OUT_LIB} ${OBJECTS}
+	@echo "ar ${OUT_LIB}"
+	@$(AR) rcs ${OUT_LIB} ${OBJECTS}
 
 ${E_OUT}: ${OUT} ${E_OBJECTS}
-	$(CC) ${E_LINK_FLAGS} -o $@ ${E_OBJECTS} ${E_LINKS}
+	@echo "cc ${E_OUT}"
+	@$(CC) ${E_LINK_FLAGS} -o $@ ${E_OBJECTS} ${E_LINKS}
 
 clean:
 	rm ${OUT_LIB}
