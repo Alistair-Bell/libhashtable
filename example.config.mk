@@ -1,1 +1,1 @@
-CONFIG_CC_FLAGS = -Wextra -Wall -g
+CFLAGS = -Wextra -Wall -g

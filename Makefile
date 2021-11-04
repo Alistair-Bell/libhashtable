@@ -13,7 +13,7 @@ E_LINK_FLAGS    = -L .
 
 .c.o:
 	@echo "cc $@"
-	@$(CC) -c ${CONFIG_CC_FLAGS} $< -o $@
+	@$(CC) -c $(CFLAGS) $< -o $@
 
 all: ${OUT}
 
